@@ -1,10 +1,12 @@
 /*
- * SAIS V1.0.4 ( HARDWARE )
+ * SAIS V1.x.x ( HARDWARE )
  * TerraeMotus V1.0 ( SOFTWARE )
  * PRUEBA PARA OBTENER FRECUENCIA DE UN SISMO
  * 25/05/23
  * MAIN CODER: RICARDO ESTRADA
  */
+
+ 
  // librerias
 #include <SPI.h>
 #include <Wire.h>
@@ -17,17 +19,13 @@
 #define direccion_lcd 0x3F
 #define filas 2
 #define columnas 16
+#define vibe 6
 
 //Variables
 float mov;
 int intensidad;
-byte sismo1 = 0;
-byte sismo2 = 1;
-byte sismo3 = 8;
-byte sismo4 = 14;
-byte sismo5 = 30;
-String NUM_MOVIl[] {/*#1:*/"54129169",/*#2:*/"35559812",/*#3:*/"33883857",/*#4:*/"41060404"/*#5:*/"41500902"}; //# Numeros de celulares 
-int cant_num = 5;
+String NUM_MOVIl[] {/*#1:*/"54129169",/*#2:*/"35559812",/*#3:*/"33883857",/*#4:*/"41060404"/*#5:*/}; //# Numeros de celulares 
+int cant_num = 4;
 
 //Constructor
 ADXL345 adxl = ADXL345();
@@ -37,6 +35,8 @@ SoftwareSerial SIM900(7, 8); // Configuración de los pines serial por software
 //Funciones
 float intensidad_sismo();
 int escala_sismica();
+void enviarSMS();
+
 void setup() {
   //Setup ADXL345
   analogReference(EXTERNAL);
@@ -47,6 +47,7 @@ void setup() {
    adxl.setRangeSetting(16);
    //Setup Visualizadores
    pinMode(activado, OUTPUT);
+   pinMode(vibe, INPUT);
    digitalWrite(activado, HIGH);
    PANTALLA.init();
   PANTALLA.backlight();
@@ -65,6 +66,7 @@ void setup() {
 void loop() {
   PANTALLA.setCursor(0,0);
   PANTALLA.print("   Intensidad   ");
+  if(digitalRead(vibe)==HIGH){
   intensidad = intensidad_sismo();
   Serial.println(intensidad);
   PANTALLA.setCursor(5,1);
@@ -72,6 +74,9 @@ void loop() {
   PANTALLA.setCursor(5,1);
   PANTALLA.print(intensidad);
   escala_sismica();
+  }
+  PANTALLA.setCursor(0,1);
+  PANTALLA.print("                ");
 }
 
 float intensidad_sismo(){
@@ -117,61 +122,12 @@ float intensidad_sismo(){
   }
   
 int escala_sismica(){
-  if(intensidad == sismo1){
-  Serial.println("Sin Sismo");
-  digitalWrite(activado, LOW);
-  delay(100);
-  digitalWrite(activado, HIGH);
-  }
-  if(intensidad >= sismo2 && intensidad <= sismo3){
-  Serial.println("Sismo Categoria 2");
-  digitalWrite(activado, LOW);
-  delay(100);
-  digitalWrite(activado, HIGH);
-  delay(100);
-  digitalWrite(activado, LOW);
-  delay(100);
-  digitalWrite(activado, HIGH);
-  }
-  if(intensidad >= sismo3 && intensidad <= sismo4){
-  Serial.println("Sismo Categoria 2");
-  digitalWrite(activado, LOW);
-  delay(100);
-  digitalWrite(activado, HIGH);
-  delay(100);
-  digitalWrite(activado, LOW);
-  delay(100);
-  digitalWrite(activado, HIGH);
-  delay(100);
-  digitalWrite(activado, LOW);
-  delay(100);
-  digitalWrite(activado, HIGH);
-  }
-  if(intensidad >= sismo4 && intensidad <= sismo5){
+  if(intensidad > 2){
     enviarSMS();
-  Serial.println("Sismo Categoria 2");
-  digitalWrite(activado, LOW);
-  delay(100);
-  digitalWrite(activado, HIGH);
-  delay(100);
-  digitalWrite(activado, LOW);
-  delay(100);
-  digitalWrite(activado, HIGH);
-  delay(100);
-  digitalWrite(activado, LOW);
-  delay(100);
-  digitalWrite(activado, HIGH);
-  delay(100);
-  digitalWrite(activado, LOW);
-  delay(100);
-  digitalWrite(activado, HIGH);
-  delay(100);
-  digitalWrite(activado, LOW);
-  delay(100);
-  digitalWrite(activado, HIGH);
   }
-  }
+}
   void enviarSMS(){
+    digitalWrite(activado, HIGH);
     for( int i = 0; i < cant_num; i++){
       delay(1000);
   SIM900.println("AT + CMGS = \""+NUM_MOVIl[i]+"\"");
@@ -182,4 +138,5 @@ int escala_sismica(){
   delay(200);
   SIM900.println();
     }
+    digitalWrite(activado,LOW);
 }
