@@ -28,6 +28,8 @@ SoftwareSerial SIM900(7,8); // Configuración de los pines serial por software
 float intensidad_sismo();
 int escala_sismica();
 void setup() {
+  //setup Vibracion
+   pinMode(vibe, INPUT);
   //Setup ADXL345
   analogReference(EXTERNAL);
    Serial.begin(9600);            
